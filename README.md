@@ -2,30 +2,57 @@
 
 이그나이트 FE1 팀의 Jira 자동화 및 통합 관리 도구입니다.
 
-## 🚀 시작하기
+## ⚡ 빠른 시작 (명령어 하나로!)
 
-### 환경 설정
+```bash
+# 최초 설정 (1회만)
+git clone https://github.com/ignite-corp/fe1-web.git ~/fe1-web
+# .env.local 파일을 ~/fe1-web/ 폴더에 저장
+echo 'alias fe1="~/fe1-web/run.sh"' >> ~/.zshrc && source ~/.zshrc
 
-1. **Node.js 버전 설정**
+# 이후 매일 사용
+fe1  # ← 이것만 입력하면 브라우저 자동 실행!
+```
 
-   ```bash
-   nvm use
-   ```
+접속: `http://localhost:7591`
 
-2. **의존성 설치**
+> 💡 **더 자세한 가이드**: [QUICK_START.md](./QUICK_START.md)
 
-   ```bash
-   npm install
-   ```
+---
 
-3. **환경 변수 설정**
-   - `.env.local` 파일을 생성하고 Jira API 토큰을 설정하세요.
-   - 자세한 내용은 [SETUP.md](./SETUP.md)를 참조하세요.
+## 🚀 일반 설치 방법
 
-4. **개발 서버 실행**
-   ```bash
-   npm run dev
-   ```
+### 1. 프로젝트 클론
+
+```bash
+git clone https://github.com/ignite-corp/fe1-web.git
+cd fe1-web
+```
+
+### 2. 자동 설치
+
+```bash
+./setup.sh
+```
+
+또는 수동 설치:
+```bash
+npm install
+```
+
+### 3. 환경 변수 설정
+- `.env.local` 파일을 생성하고 Jira API 토큰을 설정하세요.
+- 자세한 내용은 [SETUP.md](./SETUP.md)를 참조하세요.
+
+### 4. 실행
+
+```bash
+./run.sh
+# 또는
+npm run dev
+```
+
+접속: `http://localhost:7591`
 
 ## 📝 개발 스크립트
 
