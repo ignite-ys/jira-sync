@@ -573,7 +573,6 @@ export default function CreateTicketPage() {
                               티켓 제목 복사하기
                             </Button>
                           </div>
-                          ㅇ
                           <Button
                             onClick={handleSyncCreatedTicket}
                             variant="default"
