@@ -97,6 +97,7 @@ export default function Home() {
     ok: boolean | null;
     project: { id?: string | null; name?: string | null; url?: string | null };
     version: { name?: string | null; url?: string | null } | null;
+    scan?: { scannedAt?: string | null; source?: string | null } | null;
     policy: { status?: string | null } | null;
     riskProfile?: { raw?: { categories?: BlackDuckRiskCategories } } | null;
   };
@@ -112,6 +113,7 @@ export default function Home() {
           projectKey: string;
           baseUrl?: string;
           projectUrl?: string;
+          analysisDate?: string | null;
           qualityGateStatus: string;
           conditions: Array<{
             status?: string;
@@ -282,6 +284,7 @@ export default function Home() {
               projectKey: string;
               baseUrl?: string;
               projectUrl?: string;
+              analysisDate?: string | null;
               qualityGateStatus: string;
               conditions: Array<{
                 status?: string;
@@ -1011,6 +1014,14 @@ export default function Home() {
                                       {blackduck.project?.name ?? '-'} ·{' '}
                                       {blackduck.version?.name ?? '-'}
                                     </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      Scan:{' '}
+                                      {blackduck.scan?.scannedAt
+                                        ? new Date(
+                                            blackduck.scan.scannedAt
+                                          ).toLocaleString('ko-KR')
+                                        : '-'}
+                                    </div>
                                   </div>
                                   <div
                                     className={`text-xs font-semibold px-2 py-1 rounded border whitespace-nowrap ${badgeClass}`}
@@ -1107,6 +1118,14 @@ export default function Home() {
                                     </div>
                                     <div className="text-xs text-muted-foreground">
                                       {sonarqube.projectKey}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      Scan:{' '}
+                                      {sonarqube.analysisDate
+                                        ? new Date(
+                                            sonarqube.analysisDate
+                                          ).toLocaleString('ko-KR')
+                                        : '-'}
                                     </div>
                                   </div>
                                   <div

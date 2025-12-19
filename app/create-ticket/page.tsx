@@ -54,6 +54,7 @@ export default function CreateTicketPage() {
   // 생성 상태
   const [isCreating, setIsCreating] = useState(false);
   const [createdTicketKey, setCreatedTicketKey] = useState<string>('');
+  const [createdTicketSummary, setCreatedTicketSummary] = useState<string>('');
   const [createdTicketAssignee, setCreatedTicketAssignee] =
     useState<string>('');
 
@@ -123,6 +124,7 @@ export default function CreateTicketPage() {
 
     setIsCreating(true);
     setCreatedTicketKey('');
+    setCreatedTicketSummary('');
 
     try {
       // 사용자 정보 가져오기
@@ -187,6 +189,7 @@ export default function CreateTicketPage() {
       if (result.success && result.data) {
         const ticketKey = result.data.key;
         setCreatedTicketKey(ticketKey);
+        setCreatedTicketSummary(summary);
         setCreatedTicketAssignee(assignee); // 생성된 티켓의 담당자 정보 저장
         toast.success(`티켓이 생성되었습니다! (${ticketKey})`, {
           duration: 5000,
@@ -223,6 +226,18 @@ export default function CreateTicketPage() {
     try {
       await navigator.clipboard.writeText(ticketUrl);
       toast.success('티켓 링크가 클립보드에 복사되었습니다!');
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  // 티켓 제목 복사
+  const handleCopyTicketTitle = async () => {
+    if (!createdTicketSummary.trim()) return;
+
+    try {
+      await navigator.clipboard.writeText(createdTicketSummary.trim());
+      toast.success('티켓 제목이 클립보드에 복사되었습니다!');
     } catch {
       toast.error('복사에 실패했습니다.');
     }
@@ -529,22 +544,41 @@ export default function CreateTicketPage() {
                           {createdTicketKey} 티켓으로 이동
                           <ExternalLink className="h-4 w-4" />
                         </a>
+                        {createdTicketSummary.trim() && (
+                          <p className="text-sm text-green-900/90 break-words">
+                            <span className="font-medium">제목:</span>{' '}
+                            {createdTicketSummary}
+                          </p>
+                        )}
                         <div className="flex gap-2">
-                          <Button
-                            onClick={handleCopyTicketLink}
-                            variant="outline"
-                            size="sm"
-                            className="w-fit"
-                            disabled={isSyncingTicket}
-                          >
-                            <Copy className="mr-2 h-3 w-3" />
-                            티켓 링크 복사하기
-                          </Button>
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <Button
+                              onClick={handleCopyTicketLink}
+                              variant="outline"
+                              size="sm"
+                              className="w-full sm:w-fit"
+                              disabled={isSyncingTicket}
+                            >
+                              <Copy className="mr-2 h-3 w-3" />
+                              티켓 링크 복사하기
+                            </Button>
+                            <Button
+                              onClick={handleCopyTicketTitle}
+                              variant="outline"
+                              size="sm"
+                              className="w-full sm:w-fit"
+                              disabled={isSyncingTicket}
+                            >
+                              <Copy className="mr-2 h-3 w-3" />
+                              티켓 제목 복사하기
+                            </Button>
+                          </div>
+                          ㅇ
                           <Button
                             onClick={handleSyncCreatedTicket}
                             variant="default"
                             size="sm"
-                            className="w-fit"
+                            className="w-full sm:w-fit sm:ml-auto"
                             disabled={isSyncingTicket}
                           >
                             <RefreshCw

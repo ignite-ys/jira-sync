@@ -20,6 +20,18 @@ type SonarQubeProjectStatusResponse = {
   };
 };
 
+type SonarQubeProjectAnalysesSearchResponse = {
+  analyses?: Array<{
+    date?: string;
+  }>;
+};
+
+function isHtmlLike(data: unknown): boolean {
+  if (typeof data !== 'string') return false;
+  const t = data.trim().toLowerCase();
+  return t.startsWith('<!doctype html') || t.startsWith('<html');
+}
+
 function getSonarBaseUrl(): string | null {
   const raw = process.env.SONARQUBE_URL?.trim();
   if (!raw) return null;
@@ -84,11 +96,22 @@ export async function GET(request: NextRequest) {
     const qgUrl = `${baseUrl}/api/qualitygates/project_status?projectKey=${encodeURIComponent(
       projectKey
     )}`;
-    const qgRes = await axios.get<SonarQubeProjectStatusResponse>(qgUrl, {
-      headers: authHeaders,
-      httpsAgent,
-      validateStatus: () => true,
-    });
+    const analysesUrl = `${baseUrl}/api/project_analyses/search?project=${encodeURIComponent(
+      projectKey
+    )}&ps=1`;
+
+    const [qgRes, analysesRes] = await Promise.all([
+      axios.get<SonarQubeProjectStatusResponse>(qgUrl, {
+        headers: authHeaders,
+        httpsAgent,
+        validateStatus: () => true,
+      }),
+      axios.get<SonarQubeProjectAnalysesSearchResponse>(analysesUrl, {
+        headers: authHeaders,
+        httpsAgent,
+        validateStatus: () => true,
+      }),
+    ]);
 
     if (qgRes.status >= 400) {
       return NextResponse.json(
@@ -106,6 +129,10 @@ export async function GET(request: NextRequest) {
     const ok = status === 'OK';
     const conditions = qgRes.data?.projectStatus?.conditions ?? [];
     const projectUrl = `${baseUrl}/dashboard?id=${encodeURIComponent(projectKey)}`;
+    const analysisDate =
+      analysesRes.status < 400 && !isHtmlLike(analysesRes.data)
+        ? (analysesRes.data?.analyses?.[0]?.date ?? null)
+        : null;
 
     return NextResponse.json(
       {
@@ -115,6 +142,7 @@ export async function GET(request: NextRequest) {
           projectKey,
           baseUrl,
           projectUrl,
+          analysisDate,
           qualityGateStatus: status,
           conditions,
         },

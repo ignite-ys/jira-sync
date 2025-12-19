@@ -549,6 +549,14 @@ export async function GET(request: NextRequest) {
     const riskProfile =
       riskRes.status === 'fulfilled' ? riskRes.value.data : null;
 
+    const bomLastUpdatedAt =
+      getNestedStringProp(riskProfile, ['raw', 'bomLastUpdatedAt']) ||
+      getStringProp(riskProfile, 'bomLastUpdatedAt');
+    const versionUpdatedAt = selectedVersion?.updatedAt ?? null;
+    const versionCreatedAt = selectedVersion?.createdAt ?? null;
+    const scannedAt =
+      bomLastUpdatedAt || versionUpdatedAt || versionCreatedAt || null;
+
     const policyStatus: string | null =
       (policy?.overallStatus as string | undefined) ||
       (policy?.status as string | undefined) ||
@@ -568,6 +576,16 @@ export async function GET(request: NextRequest) {
           version: {
             name: selectedVersion?.versionName ?? null,
             url: versionUrl,
+          },
+          scan: {
+            scannedAt,
+            source: bomLastUpdatedAt
+              ? 'bomLastUpdatedAt'
+              : versionUpdatedAt
+                ? 'version.updatedAt'
+                : versionCreatedAt
+                  ? 'version.createdAt'
+                  : null,
           },
           policy: policy ? { status: policyStatus, raw: policy } : null,
           riskProfile: riskProfile ? { raw: riskProfile } : null,
