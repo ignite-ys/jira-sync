@@ -194,6 +194,20 @@ export default function Home() {
   // 에픽/티켓 지정 모드인지 확인
   const isSpecificMode = syncType === '에픽 지정' || syncType === '티켓 지정';
 
+  // 에픽 summary에 따라 프로젝트 태그 색상 클래스 반환
+  const getProjectColorClass = (summary: string): string => {
+    if (summary.startsWith('[CPO]')) {
+      return 'text-blue-700 font-medium data-[highlighted]:bg-blue-50 data-[state=checked]:bg-blue-100 data-[state=checked]:text-blue-800';
+    }
+    if (summary.startsWith('[GW]')) {
+      return 'text-green-700 font-medium data-[highlighted]:bg-green-50 data-[state=checked]:bg-green-100 data-[state=checked]:text-green-800';
+    }
+    if (summary.startsWith('[HB]')) {
+      return 'text-purple-700 font-medium data-[highlighted]:bg-purple-50 data-[state=checked]:bg-purple-100 data-[state=checked]:text-purple-800';
+    }
+    return 'text-gray-700';
+  };
+
   // 동기화 타입 변경 시 추가 입력 초기화
   const handleSyncTypeChange = (value: string) => {
     setSyncType(value);
@@ -791,20 +805,73 @@ export default function Home() {
                     <div className="space-y-2 pl-4 pb-3 border-l-2 border-muted">
                       <label className="text-sm font-medium text-muted-foreground">
                         {syncType === '에픽 지정'
-                          ? 'FEHG 에픽 번호'
+                          ? 'FEHG 에픽 선택'
                           : 'FEHG 티켓 번호'}
                       </label>
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder={`번호를 입력하세요 (예: 123 → FEHG-123)`}
-                        value={epicOrTicketId}
-                        onChange={handleIdInput}
-                        maxLength={10}
-                      />
+                      {syncType === '에픽 지정' ? (
+                        <Select
+                          value={epicOrTicketId}
+                          onValueChange={setEpicOrTicketId}
+                          disabled={isLoadingEpics}
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                isLoadingEpics
+                                  ? '에픽 목록 로딩 중...'
+                                  : '에픽을 선택하세요'
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fehgEpics
+                              .slice()
+                              .sort((a, b) => {
+                                // 1. 제목 기준 오름차순
+                                const summaryCompare =
+                                  a.fields.summary.localeCompare(
+                                    b.fields.summary
+                                  );
+                                if (summaryCompare !== 0) return summaryCompare;
+                                // 2. 티켓 번호 기준 오름차순
+                                return a.key.localeCompare(b.key);
+                              })
+                              .map((epic) => {
+                                // FEHG-123에서 123만 추출
+                                const epicNumber = epic.key.replace(
+                                  'FEHG-',
+                                  ''
+                                );
+                                return (
+                                  <SelectItem
+                                    key={epic.id}
+                                    value={epicNumber}
+                                    className={getProjectColorClass(
+                                      epic.fields.summary
+                                    )}
+                                  >
+                                    {epic.key} - {epic.fields.summary}
+                                  </SelectItem>
+                                );
+                              })}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder={`번호를 입력하세요 (예: 123 → FEHG-123)`}
+                          value={epicOrTicketId}
+                          onChange={handleIdInput}
+                          maxLength={10}
+                        />
+                      )}
                       <p className="text-xs text-muted-foreground">
-                        숫자만 입력 (최대 10자) • FEHG-{epicOrTicketId || 'XXX'}{' '}
-                        형태로 조회
+                        {syncType === '에픽 지정'
+                          ? fehgEpics.length === 0 && !isLoadingEpics
+                            ? '진행 중인 에픽이 없습니다.'
+                            : `FEHG-${epicOrTicketId || 'XXX'} 형태로 동기화됩니다`
+                          : `숫자만 입력 (최대 10자) • FEHG-${epicOrTicketId || 'XXX'} 형태로 조회`}
                       </p>
                     </div>
                   )}
@@ -860,7 +927,13 @@ export default function Home() {
                             return a.key.localeCompare(b.key);
                           })
                           .map((epic) => (
-                            <SelectItem key={epic.id} value={epic.key}>
+                            <SelectItem
+                              key={epic.id}
+                              value={epic.key}
+                              className={getProjectColorClass(
+                                epic.fields.summary
+                              )}
+                            >
                               {epic.key} - {epic.fields.summary}
                             </SelectItem>
                           ))}

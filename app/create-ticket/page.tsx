@@ -217,6 +217,20 @@ export default function CreateTicketPage() {
   // 에픽이 선택되었는지 확인
   const isEpicSelected = !!selectedEpic;
 
+  // 에픽 summary에 따라 프로젝트 태그 색상 클래스 반환
+  const getProjectColorClass = (summary: string): string => {
+    if (summary.startsWith('[CPO]')) {
+      return 'text-blue-700 font-medium data-[highlighted]:bg-blue-50 data-[state=checked]:bg-blue-100 data-[state=checked]:text-blue-800';
+    }
+    if (summary.startsWith('[GW]')) {
+      return 'text-green-700 font-medium data-[highlighted]:bg-green-50 data-[state=checked]:bg-green-100 data-[state=checked]:text-green-800';
+    }
+    if (summary.startsWith('[HB]')) {
+      return 'text-purple-700 font-medium data-[highlighted]:bg-purple-50 data-[state=checked]:bg-purple-100 data-[state=checked]:text-purple-800';
+    }
+    return 'text-gray-700';
+  };
+
   // 티켓 링크 복사
   const handleCopyTicketLink = async () => {
     if (!createdTicketKey) return;
@@ -399,7 +413,11 @@ export default function CreateTicketPage() {
                       return a.key.localeCompare(b.key);
                     })
                     .map((epic) => (
-                      <SelectItem key={epic.id} value={epic.key}>
+                      <SelectItem
+                        key={epic.id}
+                        value={epic.key}
+                        className={getProjectColorClass(epic.fields.summary)}
+                      >
                         {epic.key} - {epic.fields.summary}
                       </SelectItem>
                     ))}

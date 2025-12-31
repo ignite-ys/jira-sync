@@ -36,7 +36,7 @@ export class ConfluenceEpicManager {
   // 캐시
   private static cache: EpicData[] | null = null;
   private static lastFetch: number = 0;
-  private static readonly CACHE_TTL = 5 * 60 * 1000; // 5분
+  private static readonly CACHE_TTL = 30 * 1000; // 30초
 
   /**
    * 허용된 에픽 목록 조회 (캐시 포함)
