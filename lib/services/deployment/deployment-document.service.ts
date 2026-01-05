@@ -17,6 +17,47 @@ const httpsAgent = new https.Agent({
 export type DeploymentType = 'release' | 'adhoc' | 'hotfix';
 export type ProjectKey = 'groupware' | 'hmg-board' | 'cpo';
 
+/**
+ * JQL labels 조건을 변환
+ * 1. 빈 labels 채우기: labels = "" → labels = "타입_날짜"
+ * 2. 3가지 타입 치환: hotfix or adhoc or release → 선택한 타입에 맞게
+ */
+function transformLabelsInJql(
+  jqlQuery: string,
+  deploymentType: DeploymentType,
+  newDate: string
+): string {
+  let result = jqlQuery;
+
+  // 1. 빈 labels 채우기 (기획 섹션: labels = "" and labels = "기획")
+  if (deploymentType === 'release') {
+    result = result.replace(
+      /labels = &quot;&quot;/g,
+      `labels = &quot;release_${newDate}&quot;`
+    );
+  } else {
+    result = result.replace(
+      /labels = &quot;&quot;/g,
+      `(labels = &quot;hotfix_${newDate}&quot; or labels = &quot;adhoc_${newDate}&quot;)`
+    );
+  }
+
+  // 2. 3가지 타입 OR 조건 치환
+  if (deploymentType === 'release') {
+    result = result.replace(
+      /labels = &quot;hotfix_\d{6}&quot; or labels = &quot;adhoc_\d{6}&quot; or labels = &quot;release_\d{6}&quot;/g,
+      `labels = &quot;release_${newDate}&quot;`
+    );
+  } else {
+    result = result.replace(
+      /labels = &quot;hotfix_\d{6}&quot; or labels = &quot;adhoc_\d{6}&quot; or labels = &quot;release_\d{6}&quot;/g,
+      `labels = &quot;hotfix_${newDate}&quot; or labels = &quot;adhoc_${newDate}&quot;`
+    );
+  }
+
+  return result;
+}
+
 export interface CreateDeploymentDocumentRequest {
   project: ProjectKey;
   deploymentType: DeploymentType;
@@ -286,7 +327,10 @@ export async function createDeploymentDocument(
     // 5. HTML 변환 - 날짜 치환
     let newHtml = sourceHtml.replace(new RegExp(SOURCE_DATE, 'g'), shortDate);
 
-    // 6. 두레이 테이블 데이터 정리 (헤더 + 빈 행 3개)
+    // 6. JQL labels 조건 변환 (배포 타입에 따라)
+    newHtml = transformLabelsInJql(newHtml, deploymentType, shortDate);
+
+    // 7. 두레이 테이블 데이터 정리 (헤더 + 빈 행 3개)
     const doreiTableMatch = newHtml.match(
       /(<h1[^>]*>두레이<\/h1><table[^>]*>[\s\S]*?<tbody>)([\s\S]*?)(<\/tbody><\/table>)/
     );
@@ -328,7 +372,7 @@ export async function createDeploymentDocument(
       }
     }
 
-    // 7. 새 페이지 생성
+    // 8. 새 페이지 생성
     const createResponse = await axios.post(
       `${CONFLUENCE_BASE_URL}/rest/api/content`,
       {
