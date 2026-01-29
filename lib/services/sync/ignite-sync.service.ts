@@ -3,7 +3,8 @@
 import { JiraIssue } from '@/lib/types/jira';
 import { SyncResult, SyncTargetProject } from './types';
 import { SyncLogger } from './logger';
-import { mapFieldsForIgniteProject, mapStatusTransition } from './field-mapper';
+import { mapFieldsForIgniteProject } from './field-mapper';
+import { syncStatusWithPath } from './transition-helper';
 import { jira } from '@/lib/services/jira';
 
 /**
@@ -116,14 +117,7 @@ export class IgniteSyncService {
 
       // 3. 상태 동기화 (HDD는 권한 문제로 제외)
       if (targetProject !== 'HDD') {
-        const fehgStatusId = fehgTicket.fields.status?.id;
-        if (fehgStatusId) {
-          const transitionId = mapStatusTransition(fehgStatusId, targetProject);
-          if (transitionId) {
-            await jira.ignite.updateIssueStatus(targetKey, transitionId);
-            this.logger.success(`${targetKey}: 상태 동기화 완료`);
-          }
-        }
+        await this.syncIgniteStatus(fehgTicket, targetKey);
       } else {
         this.logger.info(`${targetKey}: 상태 동기화 스킵 (HDD는 제외)`);
       }
@@ -149,6 +143,56 @@ export class IgniteSyncService {
         error: errorMessage,
         isNewlyCreated: false,
       };
+    }
+  }
+
+  /**
+   * Ignite 타겟 티켓 상태 동기화 (동적 경로 탐색 사용)
+   */
+  private async syncIgniteStatus(
+    fehgTicket: JiraIssue,
+    targetKey: string
+  ): Promise<void> {
+    const fehgStatusId = fehgTicket.fields.status?.id;
+    if (!fehgStatusId) return;
+
+    try {
+      // 1. 현재 타겟 티켓의 상태 조회
+      const targetIssue = await jira.ignite.getIssue(targetKey);
+      if (!targetIssue.success || !targetIssue.data) {
+        this.logger.warning(`${targetKey}: 상태 조회 실패 - 상태 동기화 스킵`);
+        return;
+      }
+
+      const currentStatusId = targetIssue.data.fields.status?.id;
+      if (!currentStatusId) {
+        this.logger.warning(`${targetKey}: 현재 상태 ID 없음 - 상태 동기화 스킵`);
+        return;
+      }
+
+      // 2. 동적 경로 탐색 및 순차 실행
+      const result = await syncStatusWithPath(
+        'ignite',
+        targetKey,
+        fehgStatusId,
+        currentStatusId,
+        async (issueKey, transitionId) => {
+          return await jira.ignite.updateIssueStatus(issueKey, transitionId);
+        },
+        this.logger
+      );
+
+      if (!result.success && result.stepsExecuted > 0) {
+        this.logger.warning(
+          `${targetKey}: 상태 동기화 부분 완료 (${result.stepsExecuted}단계 실행 후 실패)`
+        );
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.warning(
+        `${targetKey}: 상태 동기화 실패 (필드는 업데이트됨) - ${errorMessage}`
+      );
     }
   }
 }

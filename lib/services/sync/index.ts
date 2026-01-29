@@ -4,6 +4,7 @@ export * from './types';
 export * from './logger';
 export * from './field-mapper';
 export * from './sprint-mapper';
+export * from './transition-helper';
 export * from './ignite-sync.service';
 export * from './hmg-sync.service';
 export * from './sync-orchestrator';

@@ -7,8 +7,8 @@ import {
   mapFieldsForAutoway,
   extractAutowayKey,
   isValidAutowayLink,
-  mapStatusTransition,
 } from './field-mapper';
+import { syncStatusWithPath } from './transition-helper';
 import { jira } from '@/lib/services/jira';
 import { IGNITE_CUSTOM_FIELDS, JIRA_ENDPOINTS } from '@/lib/constants/jira';
 
@@ -303,7 +303,7 @@ export class HMGSyncService {
   }
 
   /**
-   * AUTOWAY 티켓 상태 동기화
+   * AUTOWAY 티켓 상태 동기화 (동적 경로 탐색 사용)
    */
   private async syncAutowayStatus(
     fehgTicket: JiraIssue,
@@ -312,12 +312,37 @@ export class HMGSyncService {
     const fehgStatusId = fehgTicket.fields.status?.id;
     if (!fehgStatusId) return;
 
-    const transitionId = mapStatusTransition(fehgStatusId, 'AUTOWAY');
-    if (!transitionId) return;
-
     try {
-      await jira.hmg.updateIssueStatus(autowayKey, transitionId);
-      this.logger.success(`${autowayKey}: 상태 동기화 완료`);
+      // 1. 현재 AUTOWAY 티켓의 상태 조회
+      const autowayIssue = await jira.hmg.getIssue(autowayKey);
+      if (!autowayIssue.success || !autowayIssue.data) {
+        this.logger.warning(`${autowayKey}: 상태 조회 실패 - 상태 동기화 스킵`);
+        return;
+      }
+
+      const currentStatusId = autowayIssue.data.fields.status?.id;
+      if (!currentStatusId) {
+        this.logger.warning(`${autowayKey}: 현재 상태 ID 없음 - 상태 동기화 스킵`);
+        return;
+      }
+
+      // 2. 동적 경로 탐색 및 순차 실행
+      const result = await syncStatusWithPath(
+        'hmg',
+        autowayKey,
+        fehgStatusId,
+        currentStatusId,
+        async (issueKey, transitionId) => {
+          return await jira.hmg.updateIssueStatus(issueKey, transitionId);
+        },
+        this.logger
+      );
+
+      if (!result.success && result.stepsExecuted > 0) {
+        this.logger.warning(
+          `${autowayKey}: 상태 동기화 부분 완료 (${result.stepsExecuted}단계 실행 후 실패)`
+        );
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);

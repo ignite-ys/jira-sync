@@ -225,6 +225,7 @@ export const SYNC_FIELDS = {
 } as const;
 
 // 상태 매핑 (FEHG status ID → 대상 프로젝트 transition ID)
+// @deprecated - STATUS_TARGET_MAPPING + STATUS_WORKFLOW 조합으로 대체
 export const STATUS_MAPPING = {
   // FEHG → HB/KQ/HDD (이그나이트 프로젝트)
   IGNITE: {
@@ -239,6 +240,76 @@ export const STATUS_MAPPING = {
     '10375': '31', // 완료 → 완료
   },
 } as const;
+
+/**
+ * FEHG 상태 ID → 타겟 인스턴스 상태 ID 매핑
+ * FEHG 상태가 어떤 타겟 상태와 동일한지 정의
+ */
+export const STATUS_TARGET_MAPPING: Record<
+  'IGNITE' | 'HMG',
+  Record<string, string>
+> = {
+  // FEHG status ID → Ignite 타겟 프로젝트(KQ/HB/HDD) status ID
+  IGNITE: {
+    '10373': '1', // 해야 할 일 → TO_DO
+    '10374': '3', // 진행 중 → 진행 중
+    '10375': '6', // 완료 → 완료
+  },
+  // FEHG status ID → HMG(AUTOWAY) status ID
+  HMG: {
+    '10373': '1', // 해야 할 일 → 미해결
+    '10374': '3', // 진행 중 → 진행 중
+    '10375': '6', // 완료 → 종료
+  },
+};
+
+/**
+ * 워크플로우 그래프: 각 상태에서 전이 가능한 다음 상태와 transition ID
+ * 형식: { [현재상태ID]: { [다음상태ID]: transitionID } }
+ *
+ * BFS 경로 탐색에 사용됨
+ */
+export const STATUS_WORKFLOW: Record<
+  'IGNITE' | 'HMG',
+  Record<string, Record<string, string>>
+> = {
+  // Ignite 프로젝트 워크플로우 (KQ/HB/HDD)
+  // 모든 상태에서 모든 상태로 직접 전이 가능 (매우 유연함)
+  IGNITE: {
+    '1': {
+      // TO_DO에서 갈 수 있는 상태
+      '3': '171', // → 진행 중 (In Progress)
+      '6': '181', // → 완료
+    },
+    '3': {
+      // 진행 중에서 갈 수 있는 상태
+      '1': '161', // → TO_DO
+      '6': '181', // → 완료
+    },
+    '6': {
+      // 완료에서 갈 수 있는 상태
+      '1': '161', // → TO_DO
+      '3': '171', // → 진행 중 (In Progress)
+    },
+  },
+  // HMG 프로젝트 워크플로우 (AUTOWAY)
+  HMG: {
+    '1': {
+      // 미해결에서 갈 수 있는 상태
+      '3': '11', // → 진행 중 (작업 시작)
+      '6': '31', // → 종료 (티켓 종료 처리)
+    },
+    '3': {
+      // 진행 중에서 갈 수 있는 상태
+      '1': '41', // → 미해결 (Open)
+      '6': '21', // → 종료 (작업 종료)
+    },
+    '6': {
+      // 종료에서 갈 수 있는 상태
+      '1': '41', // → 미해결 (Open, reopening)
+    },
+  },
+};
 
 // Ignite Jira 커스텀 필드
 export const IGNITE_CUSTOM_FIELDS = {
