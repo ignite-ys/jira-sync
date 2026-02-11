@@ -21,10 +21,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // labels가 undefined인 경우만 에러 (빈 배열은 허용 - 라벨 제거용)
-    if (body.labels === undefined) {
+    // fixVersion 또는 labels 중 하나는 필수
+    if (!body.fixVersion && (!body.labels || body.labels.length === 0)) {
       return NextResponse.json(
-        { success: false, error: 'labels 필드가 필요합니다.' },
+        { success: false, error: 'fixVersion 또는 labels 중 하나는 필수입니다.' },
         { status: 400 }
       );
     }

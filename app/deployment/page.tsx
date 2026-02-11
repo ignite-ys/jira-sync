@@ -289,7 +289,7 @@ export default function DeploymentPage() {
       return;
     }
     if (!deploymentLabel.trim()) {
-      toast.error('배포 레이블을 입력해주세요.');
+      toast.error('배포 fixVersion을 입력해주세요.');
       return;
     }
 
@@ -301,8 +301,9 @@ export default function DeploymentPage() {
         `${selectedTickets.length}개 티켓에 배포태그를 적용하는 중...`
       );
 
-      // 적용할 레이블 구성
-      const labels = [deploymentLabel.trim(), 'FE'];
+      // 적용할 fixVersion과 labels 구성
+      const fixVersion = deploymentLabel.trim(); // 예: 'release_260226'
+      const labels: string[] = ['FE'];
       if (needsQA) {
         labels.push('QA필요');
       }
@@ -312,6 +313,7 @@ export default function DeploymentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ticketKeys: selectedTickets,
+          fixVersion: fixVersion,
           labels: labels,
         }),
       });
@@ -945,20 +947,20 @@ export default function DeploymentPage() {
                     </p>
                   </div>
 
-                  {/* 레이블 입력 */}
+                  {/* fixVersion 입력 */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-1">
-                      배포 레이블
+                      배포 fixVersion
                       <span className="text-red-500">*</span>
                     </label>
                     <Input
-                      placeholder="예: hotfix_260101"
+                      placeholder="예: release_260226"
                       value={deploymentLabel}
                       onChange={(e) => setDeploymentLabel(e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
-                      배포 종류와 날짜를 조합한 레이블을 입력하세요 (예:
-                      hotfix_260101, adhoc_251225)
+                      배포 종류와 날짜를 조합한 fixVersion을 입력하세요 (예:
+                      release_260226, hotfix_260101, adhoc_251225)
                     </p>
                   </div>
 
@@ -1028,7 +1030,7 @@ export default function DeploymentPage() {
                           적용되었습니다!
                         </p>
                         <div className="text-xs text-muted-foreground">
-                          적용된 레이블: {deploymentLabel}, FE
+                          적용된 fixVersion: {deploymentLabel}, labels: FE
                           {needsQA && ', QA필요'}
                         </div>
                         <div className="space-y-1 max-h-48 overflow-y-auto">

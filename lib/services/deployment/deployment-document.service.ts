@@ -18,40 +18,36 @@ export type DeploymentType = 'release' | 'adhoc' | 'hotfix';
 export type ProjectKey = 'groupware' | 'hmg-board' | 'cpo';
 
 /**
- * JQL labels 조건을 변환
- * 1. 빈 labels 채우기: labels = "" → labels = "타입_날짜"
- * 2. 3가지 타입 치환: hotfix or adhoc or release → 선택한 타입에 맞게
+ * JQL fixVersion 조건을 변환
+ * fixVersion = "타입_날짜" 형식을 배포 타입과 새 날짜에 맞게 변경
+ * 예: fixVersion = "release_260226" → fixVersion = "release_260303"
  */
-function transformLabelsInJql(
+function transformFixVersionInJql(
   jqlQuery: string,
   deploymentType: DeploymentType,
   newDate: string
 ): string {
   let result = jqlQuery;
 
-  // 1. 빈 labels 채우기 (기획 섹션: labels = "" and labels = "기획")
-  if (deploymentType === 'release') {
-    result = result.replace(
-      /labels = &quot;&quot;/g,
-      `labels = &quot;release_${newDate}&quot;`
-    );
-  } else {
-    result = result.replace(
-      /labels = &quot;&quot;/g,
-      `(labels = &quot;hotfix_${newDate}&quot; or labels = &quot;adhoc_${newDate}&quot;)`
-    );
-  }
+  // fixVersion 패턴 찾기 및 치환
+  // 1. 단일 타입: fixVersion = "release_260226"
+  const singleTypePattern = /fixVersion = &quot;(release|hotfix|adhoc)_\d{6}&quot;/g;
+  result = result.replace(
+    singleTypePattern,
+    `fixVersion = &quot;${deploymentType}_${newDate}&quot;`
+  );
 
-  // 2. 3가지 타입 OR 조건 치환
+  // 2. OR 조건: fixVersion = "hotfix_260226" or fixVersion = "adhoc_260226" or fixVersion = "release_260226"
+  const orPattern = /fixVersion = &quot;hotfix_\d{6}&quot; or fixVersion = &quot;adhoc_\d{6}&quot; or fixVersion = &quot;release_\d{6}&quot;/g;
   if (deploymentType === 'release') {
     result = result.replace(
-      /labels = &quot;hotfix_\d{6}&quot; or labels = &quot;adhoc_\d{6}&quot; or labels = &quot;release_\d{6}&quot;/g,
-      `labels = &quot;release_${newDate}&quot;`
+      orPattern,
+      `fixVersion = &quot;release_${newDate}&quot;`
     );
   } else {
     result = result.replace(
-      /labels = &quot;hotfix_\d{6}&quot; or labels = &quot;adhoc_\d{6}&quot; or labels = &quot;release_\d{6}&quot;/g,
-      `labels = &quot;hotfix_${newDate}&quot; or labels = &quot;adhoc_${newDate}&quot;`
+      orPattern,
+      `fixVersion = &quot;hotfix_${newDate}&quot; or fixVersion = &quot;adhoc_${newDate}&quot;`
     );
   }
 
@@ -307,8 +303,7 @@ export async function createDeploymentDocument(
 
     // 4. 원본 페이지 가져오기 (가장 최근 배포대장 사용)
     // TODO: 프로젝트별로 다른 템플릿을 사용할 수 있도록 확장 가능
-    const SOURCE_PAGE_ID = '275776098'; // hotfix 2025-12-31
-    const SOURCE_DATE = '251231';
+    const SOURCE_PAGE_ID = '322340333';
 
     const sourceResponse = await axios.get(
       `${CONFLUENCE_BASE_URL}/rest/api/content/${SOURCE_PAGE_ID}`,
@@ -329,51 +324,64 @@ export async function createDeploymentDocument(
 
     const sourceHtml = sourceResponse.data.body.storage.value;
 
-    // 5. HTML 변환 - 날짜 치환
-    let newHtml = sourceHtml.replace(new RegExp(SOURCE_DATE, 'g'), shortDate);
+    // 5. JQL fixVersion 조건 변환 (배포 타입에 따라)
+    let newHtml = transformFixVersionInJql(sourceHtml, deploymentType, shortDate);
 
-    // 6. JQL labels 조건 변환 (배포 타입에 따라)
-    newHtml = transformLabelsInJql(newHtml, deploymentType, shortDate);
-
-    // 7. 두레이 테이블 데이터 정리 (헤더 + 빈 행 3개)
-    const doreiTableMatch = newHtml.match(
-      /(<h1[^>]*>두레이<\/h1><table[^>]*>[\s\S]*?<tbody>)([\s\S]*?)(<\/tbody><\/table>)/
-    );
-
+    // 6. 두레이 테이블 데이터 정리 (헤더 + 빈 행 3개)
+    // "개발 안건" h1 다음 table의 tbody 내용을 헤더만 남기고 빈 행 3개로 교체
+    const doreiTableMatch = newHtml.match(/(<h1[^>]*>개발 안건<\/h1>[\s\S]*?<table[^>]*>[\s\S]*?<tbody[^>]*>)([\s\S]*?)(<\/tbody>)/i);
+    
     if (doreiTableMatch) {
-      const tableStart = doreiTableMatch[1];
-      const tableBody = doreiTableMatch[2];
-      const tableEnd = doreiTableMatch[3];
-
-      const headerMatch = tableBody.match(/(<tr[^>]*>[\s\S]*?<\/tr>)/);
-
-      if (headerMatch) {
-        const headerRow = headerMatch[1];
-
-        // 빈 데이터 행 3개 생성
-        const emptyRows = [2, 3, 4]
-          .map(
-            (num) => `
-<tr ac:local-id="empty-row-${num}">
-  <td class="numberingColumn">${num}</td>
-  <td data-highlight-colour="#f0f1f2" ac:local-id="empty-cell-${num}-1"><p local-id="empty-p-${num}-1" /></td>
-  <td ac:local-id="empty-cell-${num}-2"><p local-id="empty-p-${num}-2" /></td>
-  <td ac:local-id="empty-cell-${num}-3"><p local-id="empty-p-${num}-3" /></td>
-  <td ac:local-id="empty-cell-${num}-4"><p local-id="empty-p-${num}-4" /></td>
-  <td ac:local-id="empty-cell-${num}-5"><p local-id="empty-p-${num}-5" /></td>
-  <td ac:local-id="empty-cell-${num}-6"><p local-id="empty-p-${num}-6" /></td>
-  <td ac:local-id="empty-cell-${num}-7"><p local-id="empty-p-${num}-7" /></td>
-  <td ac:local-id="empty-cell-${num}-8"><p local-id="empty-p-${num}-8" /></td>
-  <td ac:local-id="empty-cell-${num}-9"><p local-id="empty-p-${num}-9" /></td>
-</tr>`
-          )
-          .join('');
-
-        const cleanedTable = `${tableStart}${headerRow}${emptyRows}${tableEnd}`;
-        newHtml = newHtml.replace(
-          /(<h1[^>]*>두레이<\/h1><table[^>]*>[\s\S]*?<tbody>)([\s\S]*?)(<\/tbody><\/table>)/,
-          cleanedTable
-        );
+      const beforeTbody = doreiTableMatch[1];
+      const tbodyContent = doreiTableMatch[2];
+      const afterTbody = doreiTableMatch[3];
+      
+      const allRows = tbodyContent.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
+      
+      if (allRows.length > 0) {
+        const headerRow = allRows[0];
+        
+        // 데이터 행 찾기 (헤더가 아닌 첫 번째 행)
+        const dataRow = allRows.length > 1 ? allRows[1] : null;
+        
+        if (dataRow) {
+          // 데이터 행에서 각 셀의 구조 추출 (td 태그와 속성)
+          const dataCells = dataRow.match(/<td([^>]*)>[\s\S]*?<\/td>/gi) || [];
+          
+          // 빈 행 생성: 데이터 행의 구조를 복사하되 내용만 비움
+          const createEmptyRow = (rowNum: number): string => {
+            const cells = dataCells.map((cell, index) => {
+              // 셀 속성 추출
+              const cellMatch = cell.match(/<td([^>]*)>/i);
+              if (!cellMatch) return '';
+              
+              let attrs = cellMatch[1];
+              
+              // local-id 제거 (Confluence가 자동 생성)
+              attrs = attrs.replace(/(data-local-id|ac:local-id)="[^"]*"/gi, '').trim();
+              
+              // 회색 음영 제거
+              attrs = attrs.replace(/data-highlight-colour="[^"]*"/gi, '').trim();
+              attrs = attrs.replace(/data-cell-background="[^"]*"/gi, '').trim();
+              attrs = attrs.replace(/style="[^"]*background[^"]*"/gi, '').trim();
+              
+              // 첫 번째 셀이 numberingColumn인 경우 번호 추가
+              if (index === 0 && attrs.includes('numberingColumn')) {
+                return `<td${attrs ? ' ' + attrs : ''}><p>${rowNum}</p></td>`;
+              }
+              
+              // 나머지 셀은 빈 p 태그만
+              return `<td${attrs ? ' ' + attrs : ''}><p /></td>`;
+            }).join('');
+            
+            return `<tr>${cells}</tr>`;
+          };
+          
+          const emptyRows = [2, 3, 4].map(createEmptyRow).join('');
+          
+          const newTbody = `${beforeTbody}${headerRow}${emptyRows}${afterTbody}`;
+          newHtml = newHtml.replace(doreiTableMatch[0], newTbody);
+        }
       }
     }
 
