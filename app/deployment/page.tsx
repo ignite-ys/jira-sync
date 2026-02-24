@@ -303,7 +303,7 @@ export default function DeploymentPage() {
 
       // 적용할 fixVersion과 labels 구성
       const fixVersion = deploymentLabel.trim(); // 예: 'release_260226'
-      const labels: string[] = ['FE'];
+      const labels: string[] = ['FE', fixVersion];
       if (needsQA) {
         labels.push('QA필요');
       }
@@ -333,6 +333,10 @@ export default function DeploymentPage() {
             `${result.successTickets.length}개 티켓에 배포태그가 적용되었습니다!`,
             { duration: 5000 }
           );
+        }
+
+        if (tagProject && selectedUser && baseMonth) {
+          await handleFetchTickets();
         }
       } else {
         toast.error(result.error || '배포태그 적용에 실패했습니다.');

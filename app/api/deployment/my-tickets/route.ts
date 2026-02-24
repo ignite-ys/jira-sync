@@ -12,7 +12,7 @@ import {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     const project = searchParams.get('project');
     const userName = searchParams.get('userName');
     const baseMonth = searchParams.get('baseMonth');
@@ -85,4 +85,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

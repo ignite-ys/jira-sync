@@ -95,8 +95,9 @@ export async function fetchDeploymentTickets(
       };
     }
 
-    // 5. JQL 쿼리 생성 (종료일 내림차순)
-    const jql = `project = ${jiraProjectKey} AND assignee = "${userInfo.hmgAccountId}" AND due >= "${startDate}" AND due <= "${endDate}" ORDER BY due DESC, created DESC`;
+    // 5. JQL 쿼리 생성
+    // duedate 범위 OR duedate 없이 활성 상태인 티켓 포함
+    const jql = `project = ${jiraProjectKey} AND assignee = "${userInfo.hmgAccountId}" AND ((due >= "${startDate}" AND due <= "${endDate}") OR (due is EMPTY AND statusCategory != Done)) ORDER BY due DESC, created DESC`;
 
     // 6. HMG Jira API 직접 호출
     const response = await axios.get<JiraSearchResult>(
