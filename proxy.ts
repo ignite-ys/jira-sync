@@ -25,7 +25,7 @@ function isAllowedIp(ip: string): boolean {
   return ALLOWED_CIDRS.some((cidr) => isIpInCidr(ip, cidr));
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // 개발 환경에서는 IP 제한 미적용
   if (process.env.NODE_ENV === 'development') {
     return NextResponse.next();
