@@ -47,7 +47,56 @@ export function proxy(request: NextRequest) {
   }
 
   if (!ip || !isAllowedIp(ip)) {
-    return new NextResponse('Access Denied', { status: 403 });
+    const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>접근 제한</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #1e293b;
+    }
+    .container {
+      text-align: center;
+      padding: 3rem 2rem;
+      max-width: 420px;
+    }
+    .icon {
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+    p {
+      font-size: 0.925rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🔒</div>
+    <h1>VPN 환경에서 접속해주세요</h1>
+    <p>이 서비스는 사내 VPN에 연결된 환경에서만<br>이용할 수 있습니다.</p>
+  </div>
+</body>
+</html>`;
+    return new NextResponse(html, {
+      status: 403,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
   }
 
   return NextResponse.next();
