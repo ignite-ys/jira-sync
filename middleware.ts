@@ -39,7 +39,6 @@ export function middleware(request: NextRequest) {
   const ip =
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     request.headers.get('x-real-ip') ||
-    request.ip ||
     '';
 
   // API 배치 호출은 허용 (GitHub Actions 등)
