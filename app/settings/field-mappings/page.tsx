@@ -1064,23 +1064,30 @@ export default function FieldMappingsPage() {
   const canAddMapping = !!selectedSourceField && !!selectedTargetField;
 
   const formUI = (
-    <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
-      {/* 매핑 이름 */}
-      <div className="space-y-1">
-        <label className="text-xs font-medium">
-          매핑 이름 <span className="text-destructive">*</span>
-        </label>
-        <Input
-          placeholder="예: FEHG → AUTOWAY 동기화"
-          value={formName}
-          onChange={(e) => setFormName(e.target.value)}
-          className="max-w-md"
-          autoFocus
-        />
-      </div>
+    <div className="border rounded-lg overflow-hidden">
+      {/* ── STEP 1: 기본 설정 ── */}
+      <div className="bg-muted/30 border-b px-5 py-4 space-y-4">
+        <div className="flex items-center gap-2">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">1</span>
+          <span className="text-sm font-semibold">기본 설정</span>
+        </div>
 
-      {/* 프로젝트 선택 */}
-      <div className="grid grid-cols-[1fr,auto,1fr] gap-3 items-end">
+        {/* 매핑 이름 */}
+        <div className="space-y-1 pl-7">
+          <label className="text-xs font-medium">
+            매핑 이름 <span className="text-destructive">*</span>
+          </label>
+          <Input
+            placeholder="예: FEHG → AUTOWAY 동기화"
+            value={formName}
+            onChange={(e) => setFormName(e.target.value)}
+            className="max-w-md"
+            autoFocus
+          />
+        </div>
+
+        {/* 프로젝트 선택 */}
+        <div className="grid grid-cols-[1fr,auto,1fr] gap-3 items-end pl-7">
         <div className="space-y-1">
           <label className="text-xs font-medium">
             소스 프로젝트 <span className="text-destructive">*</span>
@@ -1152,9 +1159,17 @@ export default function FieldMappingsPage() {
         </div>
       </div>
 
-      {/* 대상 인스턴스별 설정 */}
+      </div>
+
+      {/* ── STEP 2: 대상 프로젝트 설정 ── */}
       {targetProjectId && targetInstance && (
-        <>
+        <div className="border-b px-5 py-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">2</span>
+            <span className="text-sm font-semibold">대상 프로젝트 설정</span>
+          </div>
+
+          <div className="pl-7">
           {!isHmgTarget ? (
             /* Ignite 대상: 안내 메시지 */
             <div className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 px-3 py-2.5 text-xs text-blue-700 dark:text-blue-400">
@@ -1462,20 +1477,26 @@ export default function FieldMappingsPage() {
               </div>
             </div>
           )}
-        </>
+          </div>
+        </div>
       )}
 
-      {/* 필드 매핑 영역 */}
+      {/* ── STEP 3: 필드 매핑 ── */}
       {bothFieldsLoaded && (
-        <>
+        <div className="border-b px-5 py-4 space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">3</span>
+            <span className="text-sm font-semibold">필드 매핑</span>
+          </div>
+
           {/* 안내 */}
-          <div className="text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+          <div className="text-xs text-muted-foreground bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-md px-3 py-2 ml-7">
             왼쪽(소스)에서 필드를 선택하면 오른쪽(대상)에서 호환 가능한 필드만 활성화됩니다.
             양쪽 모두 선택 후 &quot;매핑 추가&quot; 버튼을 눌러주세요.
           </div>
 
           {/* 필드 선택 + 추가 버튼 */}
-          <div className="grid grid-cols-[minmax(0,1fr),auto,minmax(0,1fr)] gap-3 items-start">
+          <div className="grid grid-cols-[minmax(0,1fr),auto,minmax(0,1fr)] gap-3 items-start ml-7">
             <SelectableFieldList
               fields={sourceFields}
               isLoading={loadingSourceFields}
@@ -1521,11 +1542,12 @@ export default function FieldMappingsPage() {
 
           {/* 추가된 매핑 목록 */}
           {pendingMappings.length > 0 && (
-            <div className="space-y-2">
-              <div className="text-xs font-medium">
+            <div className="space-y-2 ml-7">
+              <div className="text-xs font-medium flex items-center gap-1.5">
+                <Check className="h-3 w-3 text-emerald-500" />
                 등록된 매핑 ({pendingMappings.length}개)
               </div>
-              <div className="border rounded-md divide-y overflow-hidden">
+              <div className="border border-emerald-200 dark:border-emerald-900 rounded-md divide-y overflow-hidden bg-emerald-50/50 dark:bg-emerald-950/10">
                 {pendingMappings.map((m, i) => (
                   <div
                     key={`${m.sourceField}-${m.targetField}`}
@@ -1565,30 +1587,33 @@ export default function FieldMappingsPage() {
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* 로딩 중 */}
       {(loadingSourceFields || loadingTargetFields) &&
         !bothFieldsLoaded && (
-          <div className="flex items-center justify-center py-4 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center py-4 text-sm text-muted-foreground border-b">
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
             필드 목록을 불러오는 중...
           </div>
         )}
 
-      {/* 상태 매핑 */}
+      {/* ── STEP 4: 상태 매핑 ── */}
       {sourceProjectId && targetProjectId && (sourceStatuses.length > 0 || targetStatuses.length > 0 || loadingSourceStatuses || loadingTargetStatuses || pendingStatusMappings.length > 0) && (
-        <div className="space-y-3 border rounded-lg p-4 bg-muted/20">
+        <div className="border-b px-5 py-4 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium">상태 매핑</div>
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">4</span>
+              <span className="text-sm font-semibold">상태 매핑</span>
+            </div>
             <span className="text-[10px] text-muted-foreground">
               저장 시 워크플로우(전이 경로)가 자동 생성됩니다
             </span>
           </div>
 
           {(loadingSourceStatuses || loadingTargetStatuses) && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 justify-center">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 justify-center ml-7">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               상태 목록 조회 중...
             </div>
@@ -1596,7 +1621,7 @@ export default function FieldMappingsPage() {
 
           {/* 매핑된 상태 목록 */}
           {pendingStatusMappings.length > 0 && (
-            <div className="border rounded-md divide-y overflow-hidden">
+            <div className="border border-emerald-200 dark:border-emerald-900 rounded-md divide-y overflow-hidden bg-emerald-50/50 dark:bg-emerald-950/10 ml-7">
               {pendingStatusMappings.map((s, i) => (
                 <div key={i} className="flex items-center gap-2 px-3 py-2 text-xs">
                   <span className="font-medium">{s.sourceStatusName}</span>
@@ -1617,7 +1642,7 @@ export default function FieldMappingsPage() {
 
           {/* 시각적 상태 선택 */}
           {sourceStatuses.length > 0 && targetStatuses.length > 0 && (
-            <div className="grid grid-cols-[1fr,auto,1fr] gap-3 items-start">
+            <div className="grid grid-cols-[1fr,auto,1fr] gap-3 items-start ml-7">
               {/* 소스 상태 */}
               <div className="space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">소스 상태</span>
@@ -1701,12 +1726,13 @@ export default function FieldMappingsPage() {
         </div>
       )}
 
-      {/* 버튼 */}
-      <div className="flex items-center justify-between pt-2">
+      {/* 버튼 (푸터) */}
+      <div className="flex items-center justify-between bg-muted/20 px-5 py-3 border-t">
         <span className="text-xs text-muted-foreground">
           {pendingMappings.length > 0
             ? `${pendingMappings.length}개 필드 매핑`
             : '필드 매핑을 추가해주세요'}
+          {pendingStatusMappings.length > 0 && ` · ${pendingStatusMappings.length}개 상태 매핑`}
         </span>
         <div className="flex gap-2">
           <Button
