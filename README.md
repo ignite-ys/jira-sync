@@ -1,13 +1,15 @@
-# FE1 Jira 통합 관리
+# Jira 통합 관리 도구
 
-이그나이트 FE1 팀의 Jira 자동화 및 통합 관리 도구입니다.
+> 원본 레포: https://github.com/Ignite-FEDev1/jira-sync
+
+Jira 자동화 및 통합 관리 도구입니다.
 
 ## 🚀 설치 및 실행
 
 ### 1. 프로젝트 클론
 
 ```bash
-git clone https://github.com/ignite-corp/fe1-web.git
+git clone https://github.com/Ignite-FEDev1/jira-sync.git
 cd fe1-web
 ```
 
