@@ -3,11 +3,7 @@
 import { JiraIssue, JiraIssueCreatePayload } from '@/lib/types/jira';
 import { SyncResult } from './types';
 import { SyncLogger } from './logger';
-import {
-  mapFieldsForAutoway,
-  extractAutowayKey,
-  isValidAutowayLink,
-} from './field-mapper';
+import { mapFieldsForAutoway } from './field-mapper';
 import { mapFieldsFromDb, getSyncProfileInfo } from './db-field-mapper';
 import { SyncOptions } from './types';
 import { syncStatusWithPath, syncStatusWithPathFromDb } from './transition-helper';
