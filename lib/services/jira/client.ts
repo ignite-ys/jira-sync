@@ -151,11 +151,23 @@ export class JiraClient {
       const cleanPath = path.startsWith('/') ? path.slice(1) : path;
       const url = `/api/jira/${this.instance}/${cleanPath}${queryString}`;
 
+      // 현재 사용자 ID를 헤더에 포함
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      try {
+        const stored = localStorage.getItem('ignite-current-user');
+        if (stored) {
+          const user = JSON.parse(stored);
+          if (user?.id) headers['x-user-id'] = user.id;
+        }
+      } catch {
+        // ignore
+      }
+
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: body ? JSON.stringify(body) : undefined,
       });
 

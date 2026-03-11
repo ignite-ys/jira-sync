@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { JIRA_ENDPOINTS, JIRA_API_VERSION } from '@/lib/constants/jira';
+import { resolveJiraCredentials } from '@/lib/jira-credentials';
 import axios, { AxiosError } from 'axios';
 import https from 'https';
 
@@ -46,10 +47,10 @@ async function handleJiraRequest(
   method: string
 ) {
   try {
-    const email = process.env.HMG_JIRA_EMAIL;
-    const apiToken = process.env.HMG_JIRA_API_TOKEN;
+    const userId = request.headers.get('x-user-id');
+    const credentials = await resolveJiraCredentials('hmg', userId);
 
-    if (!email || !apiToken) {
+    if (!credentials) {
       return NextResponse.json(
         {
           success: false,
@@ -58,6 +59,8 @@ async function handleJiraRequest(
         { status: 500 }
       );
     }
+
+    const { email, apiToken } = credentials;
 
     // URL 경로 구성
     const path = params.path.join('/');
