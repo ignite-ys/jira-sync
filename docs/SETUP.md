@@ -43,7 +43,7 @@ npm run dev
 | `proxy.ts` | IP 접근 제한 | 허용 IP 대역 변경 시 |
 | `scripts/daily-sync.ts` | 일일 배치 동기화 스크립트 | 배치 로직 변경 시 |
 | `.github/workflows/daily-sync.yml` | 배치 스케줄 (GitHub Actions) | 실행 주기 변경 시 |
-| `supabase-init.sql` | DB 테이블 초기화 스크립트 | DB 스키마 확인/변경 시 |
+| `db/supabase-init.sql` | DB 테이블 초기화 스크립트 | DB 스키마 확인/변경 시 |
 
 ---
 
@@ -120,7 +120,7 @@ Supabase 프로젝트를 새로 생성한 뒤 아래 순서로 진행합니다.
    - `service_role` → `DB_SERVICE_ROLE_KEY`
 
 ### 2. 스키마 생성
-Supabase 대시보드 > SQL Editor에서 `supabase-init.sql` 실행
+Supabase 대시보드 > SQL Editor에서 `db/supabase-init.sql` 실행
 
 이 파일 하나로 10개 테이블, 트리거, 인덱스, RLS 정책이 모두 생성됩니다.
 
@@ -223,7 +223,7 @@ schedule:
 
 ## DB 테이블 구조
 
-> 전체 스키마: `supabase-init.sql` (이 파일 하나로 모든 테이블 생성)
+> 전체 스키마: `db/supabase-init.sql` (이 파일 하나로 모든 테이블 생성)
 
 ### teams — 팀 정보
 
