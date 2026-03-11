@@ -33,6 +33,7 @@ import {
   SyncOrchestrator,
   SyncLog,
   SyncSummary,
+  SyncResult,
   SyncTargetProject,
 } from '@/lib/services/sync';
 import { supabase } from '@/lib/supabase';
@@ -313,6 +314,10 @@ export default function Home() {
 
         let totalSuccess = 0;
         let totalFailed = 0;
+        let totalUpdated = 0;
+        let totalCreated = 0;
+        const allResults: SyncResult[] = [];
+        const allFailedResults: SyncResult[] = [];
 
         for (const target of teamSyncTargets) {
           const label = `${target.sourceProjectName} → ${target.projectName}`;
@@ -336,16 +341,20 @@ export default function Home() {
 
           totalSuccess += summary.totalSuccess;
           totalFailed += summary.totalFailed;
+          totalUpdated += summary.totalUpdated;
+          totalCreated += summary.totalCreated;
+          allResults.push(...summary.results);
+          allFailedResults.push(...summary.failedResults);
         }
 
         const finalSummary: SyncSummary = {
           totalProcessed: totalSuccess + totalFailed,
           totalSuccess,
           totalFailed,
-          totalUpdated: 0,
-          totalCreated: 0,
-          results: [],
-          failedResults: [],
+          totalUpdated,
+          totalCreated,
+          results: allResults,
+          failedResults: allFailedResults,
         };
         setSyncSummary(finalSummary);
 
