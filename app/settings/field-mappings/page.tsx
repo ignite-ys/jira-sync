@@ -131,9 +131,6 @@ function getTransformType(sourceField: string, targetField: string): string {
   if (sourceField === IGNITE_CUSTOM_FIELDS.SPRINT && targetField === IGNITE_CUSTOM_FIELDS.SPRINT) {
     return 'sprint_map';
   }
-  if (sourceField === 'assignee') {
-    return 'account_map'
-  }
   return 'copy';
 }
 

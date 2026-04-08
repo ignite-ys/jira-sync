@@ -63,6 +63,20 @@ export async function mapFieldsFromDb(
       case 'copy': {
         // 단순 복사
         const value = getFieldValue(fehgTicket, fehgFields, source_field);
+
+        if (source_field == 'assignee' && targetProjectKey == 'AUTOWAY') {
+          // 계정 매핑 (Ignite accountId → HMG accountId)
+          const sourceValue = getFieldValue(fehgTicket, fehgFields, source_field);
+          if (sourceValue && typeof sourceValue === 'object' && 'accountId' in sourceValue) {
+            const igniteAccountId = (sourceValue as { accountId: string }).accountId;
+            const hmgAccountId = await lookupHmgAccountId(igniteAccountId);
+            if (hmgAccountId) {
+              fields[target_field] = { accountId: hmgAccountId };
+            }
+          }
+          break;
+        }
+
         if (value !== undefined && value !== null) {
           // assignee는 accountId 형태로 래핑
           if (source_field === 'assignee' && typeof value === 'object' && value !== null && 'accountId' in value) {
@@ -87,19 +101,6 @@ export async function mapFieldsFromDb(
           );
           if (mappedSprintId) {
             fields[target_field] = mappedSprintId;
-          }
-        }
-        break;
-      }
-
-      case 'account_map': {
-        // 계정 매핑 (Ignite accountId → HMG accountId)
-        const sourceValue = getFieldValue(fehgTicket, fehgFields, source_field);
-        if (sourceValue && typeof sourceValue === 'object' && 'accountId' in sourceValue) {
-          const igniteAccountId = (sourceValue as { accountId: string }).accountId;
-          const hmgAccountId = await lookupHmgAccountId(igniteAccountId);
-          if (hmgAccountId) {
-            fields[target_field] = { accountId: hmgAccountId };
           }
         }
         break;
