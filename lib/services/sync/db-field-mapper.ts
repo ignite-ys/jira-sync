@@ -64,6 +64,13 @@ export async function mapFieldsFromDb(
         // 단순 복사
         const value = getFieldValue(fehgTicket, fehgFields, source_field);
 
+        if (source_field === 'description' && target_field === 'description' && targetProjectKey == 'AUTOWAY') {
+          if (value !== undefined && value !== null) {
+            fields[target_field] = removeMediaSingleNodes(value);
+          }
+          break;
+        }
+
         if (source_field == 'assignee' && targetProjectKey == 'AUTOWAY') {
           // 계정 매핑 (Ignite accountId → HMG accountId)
           const sourceValue = getFieldValue(fehgTicket, fehgFields, source_field);
@@ -209,6 +216,23 @@ export async function getAllowedEpicsFromDb(profileId: string): Promise<string[]
   const keys = data?.map((row) => row.epic_key) || [];
   allowedEpicsCache.set(profileId, keys);
   return keys;
+}
+
+/**
+ * description ADF 문서에서 mediaSingle 노드 제거
+ */
+function removeMediaSingleNodes(doc: unknown): unknown {
+  if (typeof doc !== 'object' || doc === null) return doc;
+
+  const adf = doc as { type?: string; content?: unknown[]; [key: string]: unknown };
+  if (!Array.isArray(adf.content)) return doc;
+
+  return {
+    ...adf,
+    content: adf.content.filter(
+      (node) => (node as { type?: string }).type !== 'mediaSingle'
+    ),
+  };
 }
 
 /**
