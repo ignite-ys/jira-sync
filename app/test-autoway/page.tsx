@@ -202,16 +202,16 @@ export default function AutowayTestPage() {
       });
 
       if (!result.success) {
-        throw new Error(result.error || 'customfield_10306 업데이트 실패');
+        throw new Error(result.error || 'customfield_10438 업데이트 실패');
       }
 
-      toast.success('customfield_10306 업데이트 완료');
+      toast.success('customfield_10438 업데이트 완료');
       await refreshIssue(fehgIssue.key);
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : 'customfield_10306 업데이트 중 오류가 발생했습니다.'
+          : 'customfield_10438 업데이트 중 오류가 발생했습니다.'
       );
     } finally {
       setIsUpdatingLink(false);
@@ -290,7 +290,7 @@ export default function AutowayTestPage() {
             AUTOWAY 단일 티켓 동기화 테스트
           </h1>
           <p className="text-sm text-muted-foreground">
-            customfield_10306을 포함한 FEHG → AUTOWAY 동기화를 개별 티켓 단위로
+            customfield_10438을 포함한 FEHG → AUTOWAY 동기화를 개별 티켓 단위로
             안전하게 검증합니다.
           </p>
         </div>
@@ -302,7 +302,7 @@ export default function AutowayTestPage() {
             <CardHeader>
               <CardTitle>테스트 설정</CardTitle>
               <CardDescription>
-                FEHG 티켓 정보를 불러와 customfield_10306을 확인하고 수정할 수
+                FEHG 티켓 정보를 불러와 customfield_10438을 확인하고 수정할 수
                 있습니다.
               </CardDescription>
             </CardHeader>
@@ -400,7 +400,7 @@ export default function AutowayTestPage() {
                   </div>
 
                   <div className="space-y-3 rounded-md border border-dashed p-4">
-                    <p className="text-sm font-semibold">customfield_10306</p>
+                    <p className="text-sm font-semibold">customfield_10438</p>
                     <p className="text-xs text-muted-foreground">
                       AUTOWAY 티켓 URL이 저장되는 필드입니다. 값이 없거나 예전
                       URL이면 동기화 시 AUTOWAY 티켓이 새로 생성됩니다.
@@ -441,7 +441,7 @@ export default function AutowayTestPage() {
                         />
                         {isUpdatingLink
                           ? '업데이트 중...'
-                          : 'customfield_10306 저장'}
+                          : 'customfield_10438 저장'}
                       </Button>
                     </div>
                   </div>

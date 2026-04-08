@@ -54,7 +54,7 @@ export default function TestUpdatePage() {
 
       // AUTOWAY 번호 → URL 변환
       if (autowayNumber) {
-        payload.customfield_10306 = `https://hmg.atlassian.net/browse/AUTOWAY-${autowayNumber}`;
+        payload.customfield_10438 = `https://hmg.atlassian.net/browse/AUTOWAY-${autowayNumber}`;
       }
 
       // API Routes를 통해 업데이트
@@ -90,8 +90,8 @@ export default function TestUpdatePage() {
         setStartDate((customFields.customfield_10015 as string) || '');
         setAssignee(issue.fields.assignee?.accountId || '');
 
-        // customfield_10306에서 AUTOWAY 번호 추출
-        const hmgUrl = (customFields.customfield_10306 as string) || '';
+        // customfield_10438에서 AUTOWAY 번호 추출
+        const hmgUrl = (customFields.customfield_10438 as string) || '';
         if (hmgUrl) {
           const match = hmgUrl.match(/AUTOWAY-(\d+)/);
           setAutowayNumber(match ? match[1] : '');
@@ -202,7 +202,7 @@ export default function TestUpdatePage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                customfield_10306 (AUTOWAY 티켓 번호)
+                customfield_10438 (AUTOWAY 티켓 번호)
               </label>
               <Input
                 type="text"

@@ -79,6 +79,9 @@ export const JIRA_ROUTES = {
   ISSUE_TRANSITIONS: (issueIdOrKey: string) =>
     `/issue/${issueIdOrKey}/transitions`,
 
+  // 필드 관련
+  FIELDS: '/field',
+
   // 사용자 관련
   MYSELF: '/myself',
   USER_SEARCH: '/user/search',
@@ -105,6 +108,7 @@ export const JIRA_CONFIG = {
   MAX_RESULTS: 100,
   DEFAULT_FIELDS: [
     'summary',
+    'description',
     'status',
     'assignee',
     'reporter',
@@ -120,7 +124,7 @@ export const JIRA_CONFIG = {
     'timetracking',
     'customfield_10015', // 시작일
     'customfield_10020', // 스프린트
-    'customfield_10306', // HMG Jira 링크
+    'customfield_10438', // HMG Jira 링크
   ],
 } as const;
 
@@ -315,7 +319,7 @@ export const STATUS_WORKFLOW: Record<
 export const IGNITE_CUSTOM_FIELDS = {
   START_DATE: 'customfield_10015', // 시작일
   SPRINT: 'customfield_10020', // 스프린트
-  HMG_JIRA_LINK: 'customfield_10306', // HMG Jira 티켓 URL (FEHG 전용)
+  HMG_JIRA_LINK: 'customfield_10438', // HMG Jira 티켓 URL (FEHG 전용)
 } as const;
 
 // HMG Jira 커스텀 필드 (AUTOWAY 프로젝트)

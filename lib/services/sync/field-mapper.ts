@@ -186,7 +186,7 @@ export function mapStatusTransition(
 }
 
 /**
- * customfield_10306에서 AUTOWAY 티켓 키 추출
+ * customfield_10438에서 AUTOWAY 티켓 키 추출
  * URL: "https://hmg.atlassian.net/browse/AUTOWAY-123" → "AUTOWAY-123"
  *
  * 참고: 구 HMG URL은 사전에 마이그레이션되어 모두 신 URL로 변환됨
@@ -200,7 +200,7 @@ export function extractAutowayKey(url: string): string | null {
 }
 
 /**
- * customfield_10306이 유효한 AUTOWAY URL인지 확인
+ * customfield_10438이 유효한 AUTOWAY URL인지 확인
  */
 export function isValidAutowayLink(url: string | null | undefined): boolean {
   if (!url) return false;

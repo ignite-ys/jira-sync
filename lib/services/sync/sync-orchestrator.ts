@@ -268,7 +268,7 @@ export class SyncOrchestrator {
       // 2. AUTOWAY 확인 (link field 또는 허용된 에픽)
       if (targetProjects.includes('AUTOWAY')) {
         const autowayProf = await this.findAutowayProfile();
-        const linkFieldId = autowayProf?.linkField || 'customfield_10306';
+        const linkFieldId = autowayProf?.linkField || 'customfield_10438';
         const targetKey = autowayProf?.targetProjectKey || 'AUTOWAY';
 
         const hmgLink = ticket.fields[linkFieldId] as string | undefined;
@@ -456,7 +456,7 @@ export class SyncOrchestrator {
 
       // 2. AUTOWAY link field 확인 (DB 기반)
       const autowayProf = await this.findAutowayProfile();
-      const linkFieldId = autowayProf?.linkField || 'customfield_10306';
+      const linkFieldId = autowayProf?.linkField || 'customfield_10438';
       const targetKey = autowayProf?.targetProjectKey || 'AUTOWAY';
 
       const hmgLink = ticket.fields[linkFieldId] as string | undefined;

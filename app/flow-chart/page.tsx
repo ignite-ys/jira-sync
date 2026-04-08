@@ -88,7 +88,7 @@ flowchart TD
     CheckTickets -->|없음| Warning[경고 로그 + 종료]
     Warning --> Summary
     
-    CheckTickets -->|있음| Classify[티켓 분류 1회 순회<br/>→ issuelinks 확인<br/>→ customfield_10306 확인]
+    CheckTickets -->|있음| Classify[티켓 분류 1회 순회<br/>→ issuelinks 확인<br/>→ customfield_10438 확인]
     
     Classify --> ClassifyResult{프로젝트별 분류 완료}
     
@@ -193,7 +193,7 @@ flowchart TD
     SelectAW --> ClickBtn[동기화 버튼]
     
     ClickBtn --> Execute[HMGSyncService.syncTicket]
-    Execute --> CheckField[customfield_10306 확인]
+    Execute --> CheckField[customfield_10438 확인]
     
     CheckField --> HasLink{AUTOWAY 링크<br/>존재?}
     
@@ -209,7 +209,7 @@ flowchart TD
     
     C6 --> CreateTicket[jira.hmg.createIssue<br/>POST /rest/api/3/issue]
     CreateTicket --> GetKey[AUTOWAY-XXX 생성]
-    GetKey --> SaveLink[FEHG customfield_10306 저장<br/>AUTOWAY URL]
+    GetKey --> SaveLink[FEHG customfield_10438 저장<br/>AUTOWAY URL]
     SaveLink --> CreateStatus[상태 동기화]
     
     HasLink -->|있음| UpdateFlow[기존 티켓 업데이트 플로우]
@@ -608,7 +608,7 @@ flowchart TD
 
                     <div className="p-4 bg-purple-50 border-l-4 border-purple-500 rounded">
                       <h4 className="font-semibold text-purple-900 mb-2">
-                        🟣 customfield_10306 핵심 로직
+                        🟣 customfield_10438 핵심 로직
                       </h4>
                       <ul className="text-sm text-purple-800 space-y-1">
                         <li>
@@ -724,7 +724,7 @@ flowchart TD
                           확인 (KQ/HB/HDD)
                         </li>
                         <li>
-                          • <strong>2단계</strong>: customfield_10306에 AUTOWAY
+                          • <strong>2단계</strong>: customfield_10438에 AUTOWAY
                           링크 확인
                         </li>
                         <li>

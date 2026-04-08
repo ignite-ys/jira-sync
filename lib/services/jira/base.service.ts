@@ -60,6 +60,13 @@ export class BaseJiraService {
   }
 
   /**
+   * 프로젝트에서 사용 가능한 모든 필드 조회
+   */
+  async getFields() {
+    return this.client.get<{ id: string; name: string; custom: boolean; schema?: { type: string } }[]>(JIRA_ROUTES.FIELDS);
+  }
+
+  /**
    * JQL을 사용한 모든 이슈 검색 (페이지네이션 자동 처리)
    */
   async searchAllIssues(jql: string): Promise<{
@@ -72,6 +79,15 @@ export class BaseJiraService {
       const maxResults = 100;
       let nextPageToken: string | undefined = undefined;
       let pageCount = 0;
+
+      // 필드 목록 출력 (디버깅용)
+      const fieldsResult = await this.getFields();
+      if (fieldsResult.success && fieldsResult.data) {
+        console.log('[searchAllIssues] 사용 가능한 필드 목록:');
+        fieldsResult.data.forEach((f) => {
+          console.log(`  [${f.id}] ${f.name}${f.custom ? ' (custom)' : ''}${f.schema ? ` - type: ${f.schema.type}` : ''}`);
+        });
+      }
 
       // 첫 번째 요청
       const firstResult = await this.client.get<JiraSearchResult>(

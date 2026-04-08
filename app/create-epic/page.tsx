@@ -171,7 +171,7 @@ export default function CreateEpicPage() {
         const autowayUrl = `${JIRA_ENDPOINTS.HMG}/browse/${autowayEpicKey}`;
         const linkPayload = {
           fields: {
-            customfield_10306: autowayUrl,
+            customfield_10438: autowayUrl,
           },
         };
 
@@ -420,7 +420,7 @@ export default function CreateEpicPage() {
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      ✅ {sourceProject} 에픽의 customfield_10306에 AUTOWAY URL이
+                      ✅ {sourceProject} 에픽의 customfield_10438에 AUTOWAY URL이
                       저장되었습니다
                     </p>
                   </div>
