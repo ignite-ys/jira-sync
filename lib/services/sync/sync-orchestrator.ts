@@ -327,12 +327,15 @@ export class SyncOrchestrator {
     teamUsers?: SyncOptions['teamUsers'],
     syncProfileId?: string
   ): Promise<SyncResult[]> {
-    // AUTOWAY인 경우 DB 프로필 자동 해석
+    // syncProfileId 없으면 DB에서 자동 해석
     let effectiveProfileId = syncProfileId;
-    if (targetProject === 'AUTOWAY' && !effectiveProfileId) {
-      const autowayProf = await this.findAutowayProfile();
-      if (autowayProf) {
-        effectiveProfileId = autowayProf.id;
+    if (!effectiveProfileId) {
+      if (targetProject === 'AUTOWAY') {
+        const autowayProf = await this.findAutowayProfile();
+        if (autowayProf) effectiveProfileId = autowayProf.id;
+      } else {
+        const igniteProf = await this.findIgniteProfile(targetProject);
+        if (igniteProf) effectiveProfileId = igniteProf.id;
       }
     }
 
@@ -633,6 +636,39 @@ export class SyncOrchestrator {
     }
 
     return this.autowayProfileCache;
+  }
+
+  /**
+   * Ignite 프로젝트(KQ/HB/HDD) 동기화 프로필 조회 (캐시)
+   */
+  private igniteProfileCache = new Map<string, Awaited<ReturnType<typeof getSyncProfileInfo>>>();
+
+  private async findIgniteProfile(targetProject: 'KQ' | 'HDD' | 'HB') {
+    if (this.igniteProfileCache.has(targetProject)) {
+      return this.igniteProfileCache.get(targetProject)!;
+    }
+
+    const { data: project } = await dbServer
+      .from('projects')
+      .select('id')
+      .eq('name', targetProject)
+      .single();
+
+    if (!project) {
+      this.igniteProfileCache.set(targetProject, null);
+      return null;
+    }
+
+    const { data } = await dbServer
+      .from('sync_profiles')
+      .select('id')
+      .eq('target_project_id', project.id)
+      .limit(1)
+      .single();
+
+    const profile = data ? await getSyncProfileInfo(data.id) : null;
+    this.igniteProfileCache.set(targetProject, profile);
+    return profile;
   }
 
   /**
