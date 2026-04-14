@@ -1132,31 +1132,13 @@ export default function Home() {
                             📊 동기화 결과
                           </div>
                           {/* 통계 요약 */}
-                          <div className="mb-4 p-4 bg-muted/30 rounded-lg border border-muted space-y-2 font-sans text-sm">
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">
-                                필드 동기화
-                              </span>
-                              <span className="font-bold text-base">
-                                {syncSummary.totalUpdated}개
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">
-                                신규 생성
-                              </span>
-                              <span className="font-bold text-base text-green-600">
-                                {syncSummary.totalCreated}개
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">
-                                동기화 실패
-                              </span>
-                              <span className="font-bold text-base text-red-600">
-                                {syncSummary.totalFailed}개
-                              </span>
-                            </div>
+                          <div className="mb-4 p-4 bg-muted/30 rounded-lg border border-muted font-sans text-sm inline-grid grid-cols-[auto_auto] gap-x-6 gap-y-2">
+                            <span className="text-muted-foreground">필드 동기화</span>
+                            <span className="font-bold text-base text-foreground">{syncSummary.totalUpdated}개</span>
+                            <span className="text-muted-foreground">신규 생성</span>
+                            <span className="font-bold text-base text-green-600">{syncSummary.totalCreated}개</span>
+                            <span className="text-muted-foreground">동기화 실패</span>
+                            <span className="font-bold text-base text-red-600">{syncSummary.totalFailed}개</span>
                           </div>
                           <div className="text-sm text-muted-foreground mb-2 font-semibold">
                             상세 결과
