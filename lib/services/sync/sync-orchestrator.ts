@@ -197,9 +197,9 @@ export class SyncOrchestrator {
       return result.success && result.data ? [result.data] : [];
     }
 
-    // 일반 모드: 담당자의 모든 티켓 (완료 포함, 페이지네이션 자동 처리)
+    // 일반 모드: 현재 스프린트의 담당자 티켓
     this.logger.info('담당자의 모든 티켓 조회 중...');
-    const jql = `project = ${sourceProjectKey} AND assignee = "${options.assigneeAccountId}" AND due >= "2026-01-01" ORDER BY updated DESC`;
+    const jql = `project = ${sourceProjectKey} AND assignee = "${options.assigneeAccountId}" AND sprint in openSprints() ORDER BY updated DESC`;
 
     this.logger.info(`담당자: ${options.assigneeName || '알 수 없음'}`);
 
